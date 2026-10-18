@@ -38,7 +38,7 @@ Configuration examples are in `.env.example`. Python reads exported process vari
 
 ## Workflow
 
-1. Upload a PNG, JPEG or TIFF. Contents are decoded and validated regardless of extension. Supported: single-frame uint8 grayscale, uint16 grayscale, uint8 RGB. Unsupported stacks, alpha, palettes, signed/float pixels and ambiguous TIFFs show errors.
+1. Upload a PNG, JPEG or TIFF. Contents are decoded and validated regardless of extension. Supported: single-frame uint8 grayscale, uint16 grayscale, uint8 RGB. Unsupported stacks, actual transparency, TIFF alpha, palettes, signed/float pixels and ambiguous TIFFs show errors.
 2. Inspect filename, dimensions, bit depth, channel count and format. Assign an optional marker label and choose a channel explicitly. Grayscale uses a single plane. Green is an inspection default for RGB, not a marker inference.
 3. Draw a rectangle on the original preview, adjust numeric coordinates, or reset to the entire image. Coordinates are original pixels with half-open bounds. Browser fitting and high DPI do not change the coordinate space. Exclude annotations, scale bars and non-tissue manually.
 4. Set inclusive lower and upper raw intensity bounds using numeric controls or sliders. Default 66 is only a demonstration. uint16 analysis remains in 0–65535. Changing channel, ROI or thresholds recalculates on FastAPI.
@@ -77,3 +77,5 @@ Limits: one image at a time; full-file resend and full-resolution preview respon
 Fiji equivalence is pending direct comparison of identical source pixels, channels, ROIs and thresholds. The historical 536×286, threshold 66–255, ~4.860% Iba1 example is not an expected result: its original cropped image has not been supplied. Never use a red-overlay screenshot as measurement input or tune calculations to match that number.
 
 Next milestone: perform and document direct Fiji comparisons on the included synthetic cases and an exact laboratory reference image. Later algorithms (mean fluorescence, background correction, cell segmentation, morphology, colocalization, batches) should be added as separately validated modules and are not implemented in V1.
+
+Fully opaque RGBA PNGs are accepted automatically: only the all-255 alpha plane is discarded, preserving every RGB value. PNGs with any transparent or partially transparent pixel are rejected with an explanation; no background compositing occurs. The source hash still identifies the original RGBA upload. TIFF alpha and palette images remain unsupported.

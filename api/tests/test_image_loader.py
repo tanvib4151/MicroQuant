@@ -20,8 +20,22 @@ def test_corrupt(data):
 def test_unsupported_tiff(array):
     with pytest.raises(InputError):load_image(encode(array,"TIFF"))
 
-def test_rgba_rejected():
-    with pytest.raises(InputError):load_image(encode(np.zeros((3,4,4),np.uint8)))
+@pytest.mark.parametrize("alpha", [0, 128, 254])
+def test_transparent_rgba_rejected(alpha):
+    values = np.full((3, 4, 4), 255, np.uint8)
+    values[0, 0, 3] = alpha
+    with pytest.raises(InputError, match="transparent"):
+        load_image(encode(values))
+
+
+def test_opaque_rgba_preserves_rgb_exactly():
+    values = np.arange(48, dtype=np.uint8).reshape(3, 4, 4)
+    values[:, :, 3] = 255
+    original = values.copy()
+    loaded = load_image(encode(values))
+    np.testing.assert_array_equal(loaded.values, original[:, :, :3])
+    assert loaded.values.dtype == np.uint8
+    assert loaded.format == "PNG"
 
 def test_decoded_limit(monkeypatch):
     monkeypatch.setenv("MAX_DECODED_PIXELS","10")

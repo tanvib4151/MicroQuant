@@ -51,3 +51,17 @@ def test_total_multipart_limit_before_decode(client, monkeypatch):
     monkeypatch.setenv("MAX_UPLOAD_BYTES", "10")
     response = client.post("/analyze", content=b"x" * 70000, headers={"content-type": "multipart/form-data; boundary=test"})
     assert response.status_code == 413
+
+
+def test_opaque_rgba_matches_rgb_measurements_and_previews(client):
+    values = np.zeros((10, 10, 4), dtype=np.uint8)
+    values[:, :, 3] = 255
+    values[:5, :5, 1] = 200
+    rgba = request_analysis(client, values, channel="green")
+    rgb = request_analysis(client, values[:, :, :3], channel="green")
+    assert rgba.status_code == rgb.status_code == 200
+    a, b = rgba.json(), rgb.json()
+    for field in ("positive_pixels", "total_pixels", "positive_area_percent", "dtype", "channels", "original_png", "channel_png", "overlay_png"):
+        assert a[field] == b[field]
+    assert a["positive_pixels"] == 25
+    assert a["sha256"] != b["sha256"]  # Hash identifies the actual uploaded bytes.

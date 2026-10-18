@@ -56,9 +56,15 @@ def load_image(data: bytes) -> LoadedImage:
                         raise InputError("Decoded image exceeds the configured pixel limit.", 413)
                     if image.getexif().get(274, 1) != 1:
                         raise InputError("Non-default image orientation is unsupported; export a top-left oriented image first.")
-                    if image.mode not in ("L", "RGB", "I;16", "I;16B", "I;16L"):
-                        raise InputError("Use 8-bit grayscale, unsigned 16-bit grayscale, or 8-bit RGB without alpha.")
-                    arr = np.array(image)
+                    if image.mode == "RGBA":
+                        if image.getchannel("A").getextrema() != (255, 255):
+                            raise InputError("This PNG contains transparent or partially transparent pixels. Export an opaque image from the original source; NeuroQuant does not composite transparency or infer the hidden background.")
+                        # Every pixel is opaque: drop only alpha, preserving RGB exactly.
+                        arr = np.array(image)[:, :, :3].copy()
+                    elif image.mode in ("L", "RGB", "I;16", "I;16B", "I;16L"):
+                        arr = np.array(image)
+                    else:
+                        raise InputError("Use 8-bit grayscale, unsigned 16-bit grayscale, RGB, or fully opaque RGBA PNG. Palette and other pixel formats are not supported.")
         if arr.ndim == 2 and arr.dtype.kind == 'u' and arr.dtype.itemsize in (1, 2):
             arr = arr.astype(np.uint16 if arr.dtype.itemsize == 2 else np.uint8, copy=False)
         elif not (arr.ndim == 3 and arr.shape[2] == 3 and arr.dtype == np.uint8):
