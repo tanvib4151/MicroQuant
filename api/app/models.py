@@ -1,6 +1,7 @@
+from typing import Literal
 from pydantic import BaseModel
 
-ALGORITHM_VERSION = "positive-area/1.0.0"
+ALGORITHM_VERSION = "positive-area/1.1.0"
 
 class ROI(BaseModel):
     x0: int
@@ -19,6 +20,7 @@ class AnalysisResult(BaseModel):
     format: str
     sha256: str
     roi: ROI
+    threshold_method: Literal["manual", "otsu"]
     lower_threshold: int
     upper_threshold: int
     positive_pixels: int

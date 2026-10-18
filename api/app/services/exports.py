@@ -2,7 +2,7 @@ import csv
 import io
 
 def make_csv(result):
-    fields = ["filename", "marker", "channel", "width", "height", "dtype", "format", "sha256", "lower_threshold", "upper_threshold", "total_pixels", "positive_pixels", "positive_area_percent", "algorithm_version", "saturation_fraction", "preview_mapping"]
+    fields = ["filename", "marker", "channel", "width", "height", "dtype", "format", "sha256", "threshold_method", "lower_threshold", "upper_threshold", "total_pixels", "positive_pixels", "positive_area_percent", "algorithm_version", "saturation_fraction", "preview_mapping"]
     row = {key: result[key] for key in fields}
     row.update({f"roi_{key}": value for key, value in result["roi"].items()})
     # Protect spreadsheet users from formula execution in user-controlled text.

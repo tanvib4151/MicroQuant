@@ -15,3 +15,5 @@ Display opacity is rendered by the backend and never changes segmentation. ROI d
 Limits are configured separately on Python and Next.js processes. Set MAX_UPLOAD_BYTES consistently in both; MAX_DECODED_PIXELS is Python-only. No .env loader is implicit on Python: export variables before launching. Next reads web/.env.local if supplied. Preview PNGs and exported files contain scientific image data; users control any downloaded copies.
 
 Fully opaque RGBA PNGs are accepted automatically: only the all-255 alpha plane is discarded, preserving every RGB value. PNGs with any transparent or partially transparent pixel are rejected with an explanation; no background compositing occurs. The source hash still identifies the original RGBA upload. TIFF alpha and palette images remain unsupported.
+
+Optional automatic thresholds are isolated in services/thresholding.py. The existing /analyze endpoint selects manual or Otsu, sharing the same validated ROI, raw plane and inclusive measurement service. The frontend only selects the method and displays authoritative backend bounds; no browser histogram or threshold implementation exists.

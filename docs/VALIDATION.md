@@ -59,3 +59,11 @@ All V1 functional acceptance items are implemented and covered by the checks abo
 ## Opaque RGBA compatibility fix
 
 After a user encountered an opaque RGBA PNG, decoding was extended to accept RGBA PNGs only when every alpha sample equals 255. No RGB channel conversion, blending, normalization, or value changes occur. Any alpha value below 255 still produces a clear transparency-specific rejection. Added exact-array preservation, alpha=0/128/254 rejection, and end-to-end API equivalence tests. The original upload hash remains distinct from an RGB file with the same color values. The updated full Python suite ran: **49 passed**, one upstream deprecation warning. Earlier frontend/build/browser results above belong to the original V1 validation; those checks were not rerun for this backend-only decoding change.
+
+## Automatic Otsu thresholding, algorithm 1.1.0
+
+Added optional deterministic Otsu selection from the raw selected-channel ROI histogram, with full 256/65536-bin uint8/uint16 precision. Manual remains the default. Auto mode exports the method and selected inclusive bounds. Constant ROIs return an actionable validation error; no arbitrary split is invented. Biological correctness and Fiji auto-threshold equivalence remain unverified.
+
+The updated Python suite ran: **63 passed**, zero failed/skipped, one upstream Starlette/httpx deprecation warning. New checks cover known two-class distributions, the earliest tie split, uint16 intensities above 255, agreement with an independently calculated class-variance reference, ROI-only histogram selection, valid exports, method validation, uniform ROI rejection, determinism and preservation of manual behavior. Strict TypeScript, ESLint and the Next.js production build passed. No dependency additions were needed.
+
+The updated production-browser suite ran: **5 passed** in 14.5 seconds. The new test verifies choosing Auto: Otsu, the backend-selected lower bound, read-only auto controls, the method and exact bounds in downloaded JSON, uniform-ROI errors, stale export suppression and return to Manual. All four existing workflow tests also passed. Adding controls changed page scrolling; the ROI drag test was corrected to scroll its drawing surface into view before using pointer coordinates. No application assertions were removed.

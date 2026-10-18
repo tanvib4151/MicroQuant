@@ -1,3 +1,4 @@
+export type ThresholdMethod = "manual" | "otsu";
 export type ROI = { x0: number; y0: number; x1: number; y1: number };
 export type Result = {
   filename: string;
@@ -10,6 +11,7 @@ export type Result = {
   format: string;
   sha256: string;
   roi: ROI;
+  threshold_method: ThresholdMethod;
   lower_threshold: number;
   upper_threshold: number;
   positive_pixels: number;

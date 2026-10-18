@@ -67,6 +67,7 @@ test("complete scientific workflow and exports", async ({ page }) => {
   await page.getByRole("button", { name: "Reset to entire image" }).click();
   await expect(page.getByTestId("positive-area")).toHaveText("25.000%");
   const surface = page.getByTestId("roi-surface");
+  await surface.scrollIntoViewIfNeeded();
   const bounds = (await surface.boundingBox())!;
   await page.mouse.move(bounds.x, bounds.y);
   await page.mouse.down();
@@ -166,4 +167,45 @@ test("older response cannot overwrite a newer threshold", async ({
   await expect(page.getByTestId("positive-area")).toHaveText("25.000%");
   await page.waitForTimeout(1200);
   await expect(page.getByTestId("positive-area")).toHaveText("25.000%");
+});
+
+test("automatic Otsu selects raw ROI thresholds, exports method, and recovers from uniform ROI", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page
+    .getByLabel("Upload microscopy image")
+    .setInputFiles(join(dir, "gray.png"));
+  await expect(page.getByTestId("positive-area")).toHaveText("25.000%");
+  await page.getByLabel("Threshold method").selectOption("otsu");
+  await expect(
+    page.getByRole("definition").filter({ hasText: "Auto: Otsu" }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Lower threshold", { exact: true })).toHaveValue(
+    "1",
+  );
+  await expect(
+    page.getByLabel("Lower threshold", { exact: true }),
+  ).toBeDisabled();
+  await expect(page.getByTestId("positive-area")).toHaveText("25.000%");
+  const jsonPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Settings JSON" }).click();
+  const settings = JSON.parse(
+    readFileSync((await (await jsonPromise).path())!, "utf8"),
+  );
+  expect(settings.threshold_method).toBe("otsu");
+  expect(settings.lower_threshold).toBe(1);
+  expect(settings.upper_threshold).toBe(255);
+  await page.getByLabel("ROI x0").fill("50");
+  await expect(page.locator("p[role=alert]")).toContainText(
+    "at least two distinct intensities",
+  );
+  await expect(page.getByRole("button", { name: "Settings JSON" })).toHaveCount(
+    0,
+  );
+  await page.getByLabel("Threshold method").selectOption("manual");
+  await expect(
+    page.getByLabel("Lower threshold", { exact: true }),
+  ).toBeEnabled();
+  await expect(page.getByTestId("positive-area")).toHaveText("0.000%");
 });

@@ -8,7 +8,7 @@ import ImageViewer from "@/components/ImageViewer";
 import ResultsPanel from "@/components/ResultsPanel";
 import ExportControls from "@/components/ExportControls";
 import { analyze } from "@/lib/api";
-import type { Result, ROI } from "@/lib/types";
+import type { Result, ROI, ThresholdMethod } from "@/lib/types";
 export default function Home() {
   const [file, setFile] = useState<File | null>(null),
     [channel, setChannel] = useState("auto"),
@@ -20,6 +20,7 @@ export default function Home() {
     [result, setResult] = useState<Result | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  const [method, setMethod] = useState<ThresholdMethod>("manual");
   const generation = useRef(0);
   const [revision, setRevision] = useState(0);
   const [fresh, setFresh] = useState(false);
@@ -40,6 +41,7 @@ export default function Home() {
         roi,
         opacity,
         controller.signal,
+        method,
       )
         .then((data) => {
           if (id !== generation.current) return;
@@ -66,7 +68,7 @@ export default function Home() {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [file, channel, marker, lower, upper, roi, opacity, revision]);
+  }, [file, channel, marker, lower, upper, roi, opacity, revision, method]);
   function invalidate() {
     generation.current++;
     setRevision((value) => value + 1);
@@ -78,6 +80,7 @@ export default function Home() {
     setFile(next);
     setResult(null);
     setChannel("auto");
+    setMethod("manual");
     setLower(66);
     setUpper(255);
     setRoi(null);
@@ -212,8 +215,21 @@ export default function Home() {
         <aside className="panel">
           <fieldset disabled={!result}>
             <ThresholdControls
-              lower={lower}
-              upper={upper}
+              method={method}
+              onMethodChange={(next) => {
+                invalidate();
+                setMethod(next);
+              }}
+              lower={
+                method === "otsu" && result?.threshold_method === "otsu"
+                  ? result.lower_threshold
+                  : lower
+              }
+              upper={
+                method === "otsu" && result?.threshold_method === "otsu"
+                  ? result.upper_threshold
+                  : upper
+              }
               max={result?.dtype === "uint16" ? 65535 : 255}
               onChange={(lo, hi) => {
                 invalidate();

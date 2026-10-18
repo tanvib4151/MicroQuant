@@ -12,6 +12,8 @@ export default function ResultsPanel({ result }: { result: Result }) {
         <dd>{result.marker || "Not specified"}</dd>
         <dt>Channel</dt>
         <dd>{result.channel}</dd>
+        <dt>Threshold method</dt>
+        <dd>{result.threshold_method === "otsu" ? "Auto: Otsu" : "Manual"}</dd>
         <dt>Threshold</dt>
         <dd>
           {result.lower_threshold}–{result.upper_threshold}
