@@ -1,0 +1,93 @@
+{
+  "scope": "Synthetic interpretation stress cases; no real controls or biological validation",
+  "results": [
+    {
+      "case": "background_only_uniform_intensity_distribution",
+      "threshold_method": "otsu",
+      "lower_threshold": 20,
+      "upper_threshold": 255,
+      "positive_pixels": 5000,
+      "total_pixels": 10000,
+      "positive_area_percent": 50.0,
+      "saturation_fraction": 0.0,
+      "observed_max": 29
+    },
+    {
+      "case": "illumination_gradient_without_staining",
+      "threshold_method": "otsu",
+      "lower_threshold": 128,
+      "upper_threshold": 255,
+      "positive_pixels": 5120,
+      "total_pixels": 10240,
+      "positive_area_percent": 50.0,
+      "saturation_fraction": 0.00390625,
+      "observed_max": 255
+    },
+    {
+      "case": "two_intensity_classes",
+      "threshold_method": "otsu",
+      "lower_threshold": 11,
+      "upper_threshold": 255,
+      "positive_pixels": 50,
+      "total_pixels": 100,
+      "positive_area_percent": 50.0,
+      "saturation_fraction": 0.0,
+      "observed_max": 20
+    },
+    {
+      "case": "same_image_doubled_intensities",
+      "threshold_method": "otsu",
+      "lower_threshold": 21,
+      "upper_threshold": 255,
+      "positive_pixels": 50,
+      "total_pixels": 100,
+      "positive_area_percent": 50.0,
+      "saturation_fraction": 0.0,
+      "observed_max": 40
+    },
+    {
+      "case": "one_bright_pixel",
+      "threshold_method": "otsu",
+      "lower_threshold": 11,
+      "upper_threshold": 255,
+      "positive_pixels": 1,
+      "total_pixels": 100,
+      "positive_area_percent": 1.0,
+      "saturation_fraction": 0.0,
+      "observed_max": 200
+    },
+    {
+      "case": "manual_full_rectangle_with_blank_background",
+      "threshold_method": "manual",
+      "lower_threshold": 100,
+      "upper_threshold": 255,
+      "positive_pixels": 25,
+      "total_pixels": 100,
+      "positive_area_percent": 25.0,
+      "saturation_fraction": 0.0,
+      "observed_max": 200
+    },
+    {
+      "case": "manual_bright_region_only",
+      "threshold_method": "manual",
+      "lower_threshold": 100,
+      "upper_threshold": 255,
+      "positive_pixels": 25,
+      "total_pixels": 25,
+      "positive_area_percent": 100.0,
+      "saturation_fraction": 0.0,
+      "observed_max": 200
+    },
+    {
+      "case": "hypothetical_12bit_detector_clipped_values_in_uint16_container",
+      "threshold_method": "manual",
+      "lower_threshold": 1000,
+      "upper_threshold": 65535,
+      "positive_pixels": 2,
+      "total_pixels": 4,
+      "positive_area_percent": 50.0,
+      "saturation_fraction": 0.0,
+      "observed_max": 4095
+    }
+  ]
+}
