@@ -209,3 +209,73 @@ test("automatic Otsu selects raw ROI thresholds, exports method, and recovers fr
   ).toBeEnabled();
   await expect(page.getByTestId("positive-area")).toHaveText("0.000%");
 });
+
+test("provenance, QC definitions and research checklist persist with current exports", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page
+    .getByLabel("Upload microscopy image")
+    .setInputFiles(join(dir, "gray.png"));
+  await expect(page.getByTestId("positive-area")).toHaveText("25.000%");
+  await expect(
+    page.getByRole("heading", { name: "Threshold-positive ROI area" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Pixels at datatype maximum", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Zero does not exclude detector clipping.", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  await page.getByLabel("Image source").selectOption("published");
+  await page
+    .getByText("Provenance and controls (optional)", { exact: true })
+    .click();
+  await page.getByLabel("Sample / specimen ID").fill("animal-07 / section-03");
+  await page
+    .getByLabel("Acquisition notes")
+    .fill("Exposure 30 ms, gain 2; detector ceiling 4095");
+  await page.getByLabel("Control reference").fill("negative-01");
+  await expect(page.getByTestId("positive-area")).toHaveText("25.000%");
+  const jsonPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Settings JSON" }).click();
+  const settings = JSON.parse(
+    readFileSync((await (await jsonPromise).path())!, "utf8"),
+  );
+  expect(settings.image_source).toBe("published");
+  expect(settings.sample_id).toBe("animal-07 / section-03");
+  expect(settings.control_reference).toBe("negative-01");
+  expect(settings.acquisition_notes).toContain("4095");
+  expect(
+    settings.warnings.some((n: string) => n.includes("Published-figure")),
+  ).toBeTruthy();
+  expect(
+    settings.interpretation_notes.some((n: string) => n.includes("validation")),
+  ).toBeTruthy();
+  expect(settings.datatype_max_fraction).toBe(0);
+  const csvPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Results CSV" }).click();
+  const csv = readFileSync((await (await csvPromise).path())!, "utf8");
+  expect(csv).toContain("image_source");
+  expect(csv).toContain("published");
+  expect(csv).toContain("negative-01");
+  expect(csv).toContain("Published-figure");
+  expect(csv).toContain("interpretation_notes");
+  await page
+    .getByText("Before biological interpretation", { exact: true })
+    .click();
+  await expect(
+    page.getByText(
+      "Biological validation pending. This checklist is guidance, not certification.",
+    ),
+  ).toBeVisible();
+  await page
+    .getByLabel("Upload microscopy image")
+    .setInputFiles(join(dir, "gray16.png"));
+  await expect(page.getByTestId("positive-area")).toHaveText("75.000%");
+  await expect(page.getByLabel("Image source")).toHaveValue("unspecified");
+  await expect(page.getByLabel("Sample / specimen ID")).toHaveValue("");
+  await expect(page.getByLabel("Control reference")).toHaveValue("");
+});

@@ -1,4 +1,4 @@
-import type { ROI, Result, ThresholdMethod } from "./types";
+import type { ROI, Result, ThresholdMethod, Provenance } from "./types";
 export async function analyze(
   file: File,
   channel: string,
@@ -9,9 +9,11 @@ export async function analyze(
   opacity: number,
   signal: AbortSignal,
   method: ThresholdMethod,
+  provenance: Provenance,
 ): Promise<Result> {
   const form = new FormData();
   form.set("image", file);
+  for (const [key, value] of Object.entries(provenance)) form.set(key, value);
   form.set("threshold_method", method);
   form.set("channel", channel);
   form.set("marker", marker);

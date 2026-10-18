@@ -1,6 +1,19 @@
+export type ImageSource =
+  "unspecified" | "laboratory" | "synthetic" | "published";
+export type Provenance = {
+  image_source: ImageSource;
+  sample_id: string;
+  acquisition_notes: string;
+  control_reference: string;
+};
 export type ThresholdMethod = "manual" | "otsu";
 export type ROI = { x0: number; y0: number; x1: number; y1: number };
-export type Result = {
+export type Result = Provenance & {
+  export_schema_version: string;
+  measurement_definition: string;
+  saturation_definition: string;
+  interpretation_notes: string[];
+  datatype_max_fraction: number;
   filename: string;
   marker: string;
   channel: string;

@@ -67,3 +67,17 @@ Added optional deterministic Otsu selection from the raw selected-channel ROI hi
 The updated Python suite ran: **63 passed**, zero failed/skipped, one upstream Starlette/httpx deprecation warning. New checks cover known two-class distributions, the earliest tie split, uint16 intensities above 255, agreement with an independently calculated class-variance reference, ROI-only histogram selection, valid exports, method validation, uniform ROI rejection, determinism and preservation of manual behavior. Strict TypeScript, ESLint and the Next.js production build passed. No dependency additions were needed.
 
 The updated production-browser suite ran: **5 passed** in 14.5 seconds. The new test verifies choosing Auto: Otsu, the backend-selected lower bound, read-only auto controls, the method and exact bounds in downloaded JSON, uniform-ROI errors, stale export suppression and return to Manual. All four existing workflow tests also passed. Adding controls changed page scrolling; the ROI drag test was corrected to scroll its drawing surface into view before using pointer coordinates. No application assertions were removed.
+
+## Biological QA software remediation
+
+Implemented clearer threshold-positive rectangular ROI and datatype-ceiling labels, backend-retained source/specimen/acquisition/control provenance, exported QC and interpretation notes in CSV/JSON, and an in-app laboratory validation checklist. The numeric processing algorithm remains positive-area/1.1.0; export schema is explicitly recorded as 1.1.0. Existing saturation_fraction is retained as a deprecated alias of datatype_max_fraction with a clear definition. No detector ceiling or biological validity is inferred from metadata notes.
+
+Actual checks after this change:
+
+- Python: **77 passed**, zero failed/skipped, one existing Starlette/httpx deprecation warning. New tests cover provenance validation and limits, multiline CSV/JSON round trips, published-image warnings, default unspecified source, aliases/definitions, CSV formula safety, and invariance of scientific counts, thresholds, hashes and previews to provenance edits.
+- Browser: **6 passed**, zero failed/skipped, 17.3 seconds against the production build. The new test checks heading/ceiling definitions, source selection, specimen/acquisition/control entries, corresponding CSV/JSON downloads including QC notes, the validation checklist, and resetting provenance on a new upload. Existing manual/automatic, ROI, race, error and export workflows still passed.
+- Strict TypeScript, ESLint and Next.js production build: passed.
+- All **eight** synthetic Bio QA interpretation cases were rerun through FastAPI and compared to BIO_QA_RESULTS.json: exact equality. These deliberately retain the Otsu background and adaptive-threshold limitations; no artificial biological correction was introduced.
+- git diff --check: passed.
+
+Direct Fiji comparisons, laboratory controls, biological specificity and research validity remain pending. No original microscopy files, positive/negative controls or acquisition records were supplied for those steps. The checklist and optional descriptive references are not proof of completed validation. No new runtime dependencies, deployment or merge was required.

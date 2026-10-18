@@ -6,9 +6,10 @@ import ThresholdControls from "@/components/ThresholdControls";
 import RoiSelector from "@/components/RoiSelector";
 import ImageViewer from "@/components/ImageViewer";
 import ResultsPanel from "@/components/ResultsPanel";
+import ValidationChecklist from "@/components/ValidationChecklist";
 import ExportControls from "@/components/ExportControls";
 import { analyze } from "@/lib/api";
-import type { Result, ROI, ThresholdMethod } from "@/lib/types";
+import type { Result, ROI, ThresholdMethod, ImageSource } from "@/lib/types";
 export default function Home() {
   const [file, setFile] = useState<File | null>(null),
     [channel, setChannel] = useState("auto"),
@@ -24,7 +25,10 @@ export default function Home() {
   const generation = useRef(0);
   const [revision, setRevision] = useState(0);
   const [fresh, setFresh] = useState(false);
-  const [source, setSource] = useState("laboratory");
+  const [source, setSource] = useState<ImageSource>("unspecified");
+  const [sampleId, setSampleId] = useState("");
+  const [acquisitionNotes, setAcquisitionNotes] = useState("");
+  const [controlReference, setControlReference] = useState("");
   useEffect(() => {
     if (!file) return;
     const id = ++generation.current;
@@ -42,6 +46,12 @@ export default function Home() {
         opacity,
         controller.signal,
         method,
+        {
+          image_source: source,
+          sample_id: sampleId,
+          acquisition_notes: acquisitionNotes,
+          control_reference: controlReference,
+        },
       )
         .then((data) => {
           if (id !== generation.current) return;
@@ -68,7 +78,21 @@ export default function Home() {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [file, channel, marker, lower, upper, roi, opacity, revision, method]);
+  }, [
+    file,
+    channel,
+    marker,
+    lower,
+    upper,
+    roi,
+    opacity,
+    revision,
+    method,
+    source,
+    sampleId,
+    acquisitionNotes,
+    controlReference,
+  ]);
   function invalidate() {
     generation.current++;
     setRevision((value) => value + 1);
@@ -86,6 +110,10 @@ export default function Home() {
     setRoi(null);
     setOpacity(0.45);
     setMarker("");
+    setSource("unspecified");
+    setSampleId("");
+    setAcquisitionNotes("");
+    setControlReference("");
   }
   const full = result
     ? { x0: 0, y0: 0, x1: result.width, y1: result.height }
@@ -156,13 +184,66 @@ export default function Home() {
           )}
           <label>
             Image source
-            <select value={source} onChange={(e) => setSource(e.target.value)}>
-              <option value="laboratory">Laboratory / synthetic image</option>
+            <select
+              disabled={!file}
+              value={source}
+              onChange={(e) => {
+                invalidate();
+                setSource(e.target.value as ImageSource);
+              }}
+            >
+              <option value="unspecified">Not specified</option>
+              <option value="laboratory">Original laboratory image</option>
+              <option value="synthetic">Synthetic reference image</option>
               <option value="published">
                 Published figure (exploratory only)
               </option>
             </select>
           </label>
+          <details>
+            <summary>Provenance and controls (optional)</summary>
+            <small>
+              For the current image; resets on a new upload. These notes do not
+              certify validation.
+            </small>
+            <fieldset disabled={!file}>
+              <label>
+                Sample / specimen ID
+                <input
+                  maxLength={200}
+                  value={sampleId}
+                  onChange={(e) => {
+                    invalidate();
+                    setSampleId(e.target.value);
+                  }}
+                />
+              </label>
+              <label>
+                Acquisition notes
+                <textarea
+                  maxLength={2000}
+                  value={acquisitionNotes}
+                  onChange={(e) => {
+                    invalidate();
+                    setAcquisitionNotes(e.target.value);
+                  }}
+                  placeholder="Objective, exposure, gain, bit depth / detector ceiling, upstream processing"
+                />
+              </label>
+              <label>
+                Control reference
+                <input
+                  maxLength={500}
+                  value={controlReference}
+                  onChange={(e) => {
+                    invalidate();
+                    setControlReference(e.target.value);
+                  }}
+                  placeholder="Control image IDs and protocol reference"
+                />
+              </label>
+            </fieldset>
+          </details>
           {source === "published" && (
             <p className="warning">
               Published figures may be adjusted, compressed or annotated.
@@ -170,6 +251,7 @@ export default function Home() {
               evidence.
             </p>
           )}
+          <ValidationChecklist />
         </aside>
         <section className="workspace">
           <div className="section-heading">
