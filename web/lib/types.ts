@@ -1,0 +1,26 @@
+export type ROI = { x0: number; y0: number; x1: number; y1: number };
+export type Result = {
+  filename: string;
+  marker: string;
+  channel: string;
+  width: number;
+  height: number;
+  dtype: string;
+  channels: string[];
+  format: string;
+  sha256: string;
+  roi: ROI;
+  lower_threshold: number;
+  upper_threshold: number;
+  positive_pixels: number;
+  total_pixels: number;
+  positive_area_percent: number;
+  saturation_fraction: number;
+  warnings: string[];
+  algorithm_version: string;
+  preview_mapping: string;
+  original_png: string;
+  channel_png: string;
+  overlay_png: string;
+  csv: string;
+};
