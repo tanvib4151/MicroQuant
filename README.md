@@ -1,1 +1,1 @@
-# NeuroQuant
+# MicroQuant
